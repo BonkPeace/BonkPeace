@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghibli Survivors</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            cursor: none;
+        }
+        
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-family: 'Courier New', monospace;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+        }
+        
+        #ui div {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        #ui div:last-child {
+            margin-bottom: 0;
+        }
+        
+        #timer {
+            color: #FFD700;
+            font-weight: bold;
+        }
+        
+        #health {
+            color: #FF6B6B;
+            font-weight: bold;
+        }
+        
+        #score {
+            color: #4ECDC4;
+            font-weight: bold;
+        }
+        
+        #difficulty {
+            color: #FF9500;
+            font-weight: bold;
+        }
+        
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        #crosshair::before, #crosshair::after {
+            content: '';
+            position: absolute;
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        
+        #crosshair::before {
+            width: 3px;
+            height: 20px;
+            left: 13.5px;
+            top: 5px;
+        }
+        
+        #crosshair::after {
+            width: 20px;
+            height: 3px;
+            left: 5px;
+            top: 13.5px;
+        }
+        
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            font-size: 16px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            font-family: 'Courier New', monospace;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(3px);
+        }
+        
+        #audioControls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            z-index: 100;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(3px);
+        }
+        
+        #audioControls label {
+            display: block;
+            margin-bottom: 5px;
+            color: #FFD700;
+        }
+        
+        #audioControls input[type="range"] {
+            width: 100px;
+            margin-bottom: 10px;
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        #gameOverUI {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            cursor: auto;
+        }
+        
+        #gameOverContent {
+            background: rgba(20, 20, 20, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            font-family: 'Courier New', monospace;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+            min-width: 400px;
+        }
+        
+        #gameOverContent h1 {
+            font-size: 48px;
+            color: #FF4444;
+            margin: 0 0 30px 0;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+            font-weight: bold;
+        }
+        
+        #survivalStats {
+            margin: 30px 0;
+        }
+        
+        #survivalStats div {
+            font-size: 24px;
+            margin: 15px 0;
+            color: #CCCCCC;
+        }
+        
+        #finalTime {
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 28px;
+        }
+        
+        #finalScore {
+            color: #4ECDC4;
+            font-weight: bold;
+            font-size: 28px;
+        }
+        
+        #finalDifficulty {
+            color: #FF9500;
+            font-weight: bold;
+            font-size: 28px;
+        }
+        
+        #playAgainBtn {
+            background: linear-gradient(45deg, #FF4444, #FF6666);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            font-size: 24px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 68, 68, 0.3);
+        }
+        
+        #playAgainBtn:hover {
+            background: linear-gradient(45deg, #FF6666, #FF8888);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 68, 68, 0.4);
+        }
+        
+        #playAgainBtn:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(255, 68, 68, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="ui">
+            <div>Time: <span id="timer">0:00</span></div>
+            <div>Health: <span id="health">100</span></div>
+            <div>Score: <span id="score">0</span></div>
+            <div>Difficulty: <span id="difficulty">1.0x</span></div>
+        </div>
+        <div id="audioControls">
+            <label for="masterVolume">Master Volume</label>
+            <input type="range" id="masterVolume" min="0" max="100" value="70">
+            <label for="musicVolume">Music Volume</label>
+            <input type="range" id="musicVolume" min="0" max="100" value="30">
+            <label for="sfxVolume">SFX Volume</label>
+            <input type="range" id="sfxVolume" min="0" max="100" value="60">
+        </div>
+        <div id="crosshair"></div>
+        <div id="instructions">
+            WASD to move | Mouse to look | Click to shoot | ESC to pause
+        </div>
+        
+        <div id="gameOverUI" style="display: none;">
+            <div id="gameOverContent">
+                <h1>GAME OVER</h1>
+                <div id="survivalStats">
+                    <div>Survival Time: <span id="finalTime">0:00</span></div>
+                    <div>Final Score: <span id="finalScore">0</span></div>
+                    <div>Difficulty Reached: <span id="finalDifficulty">1.0x</span></div>
+                </div>
+                <button id="playAgainBtn">Play Again</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+        }
+    }
+    </script>
+    
+    <script type="module" src="game.js"></script>
+</body>
+</html>
