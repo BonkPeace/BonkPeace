@@ -1982,6 +1982,58 @@ class GhibliSurvivors {
         const upperBody = new THREE.Mesh(upperBodyGeometry, upperBodyMaterial);
         upperBody.position.y = 0.5;
         enemyGroup.add(upperBody);
+
+        // Add red glowing eyes
+        const eyeGeometry = new THREE.SphereGeometry(0.08, 8, 8);
+        
+        // Left eye
+        const leftEyeMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xFF0000,
+            transparent: true,
+            opacity: 0.9
+        });
+        const leftEye = new THREE.Mesh(eyeGeometry, leftEyeMaterial);
+        leftEye.position.set(-0.2, 0.8, 0.4);
+        enemyGroup.add(leftEye);
+
+        // Left eye glow
+        const leftEyeGlowGeometry = new THREE.SphereGeometry(0.12, 8, 8);
+        const leftEyeGlowMaterial = new THREE.MeshBasicMaterial({
+            color: 0xFF0000,
+            transparent: true,
+            opacity: 0.3
+        });
+        const leftEyeGlow = new THREE.Mesh(leftEyeGlowGeometry, leftEyeGlowMaterial);
+        leftEyeGlow.position.set(-0.2, 0.8, 0.4);
+        enemyGroup.add(leftEyeGlow);
+
+        // Right eye
+        const rightEyeMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xFF0000,
+            transparent: true,
+            opacity: 0.9
+        });
+        const rightEye = new THREE.Mesh(eyeGeometry, rightEyeMaterial);
+        rightEye.position.set(0.2, 0.8, 0.4);
+        enemyGroup.add(rightEye);
+
+        // Right eye glow
+        const rightEyeGlowGeometry = new THREE.SphereGeometry(0.12, 8, 8);
+        const rightEyeGlowMaterial = new THREE.MeshBasicMaterial({
+            color: 0xFF0000,
+            transparent: true,
+            opacity: 0.3
+        });
+        const rightEyeGlow = new THREE.Mesh(rightEyeGlowGeometry, rightEyeGlowMaterial);
+        rightEyeGlow.position.set(0.2, 0.8, 0.4);
+        enemyGroup.add(rightEyeGlow);
+
+        // Store references for animation
+        enemyGroup.leftEye = leftEye;
+        enemyGroup.rightEye = rightEye;
+        enemyGroup.leftEyeGlow = leftEyeGlow;
+        enemyGroup.rightEyeGlow = rightEyeGlow;
+        enemyGroup.eyeTime = Math.random() * Math.PI * 2; // Random start phase
         
         // Spawn at random position around player (restored range)
         const angle = Math.random() * Math.PI * 2;
@@ -2017,6 +2069,58 @@ class GhibliSurvivors {
         const upperBody = new THREE.Mesh(upperBodyGeometry, upperBodyMaterial);
         upperBody.position.y = 1.0;
         giantEnemyGroup.add(upperBody);
+
+        // Add red glowing eyes (larger for giant enemy)
+        const eyeGeometry = new THREE.SphereGeometry(0.16, 8, 8); // Double size for giant
+        
+        // Left eye
+        const leftEyeMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xFF0000,
+            transparent: true,
+            opacity: 0.95
+        });
+        const leftEye = new THREE.Mesh(eyeGeometry, leftEyeMaterial);
+        leftEye.position.set(-0.4, 1.6, 0.8); // Scaled positions for giant
+        giantEnemyGroup.add(leftEye);
+
+        // Left eye glow (bigger for giant)
+        const leftEyeGlowGeometry = new THREE.SphereGeometry(0.24, 8, 8);
+        const leftEyeGlowMaterial = new THREE.MeshBasicMaterial({
+            color: 0xFF0000,
+            transparent: true,
+            opacity: 0.4
+        });
+        const leftEyeGlow = new THREE.Mesh(leftEyeGlowGeometry, leftEyeGlowMaterial);
+        leftEyeGlow.position.set(-0.4, 1.6, 0.8);
+        giantEnemyGroup.add(leftEyeGlow);
+
+        // Right eye
+        const rightEyeMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xFF0000,
+            transparent: true,
+            opacity: 0.95
+        });
+        const rightEye = new THREE.Mesh(eyeGeometry, rightEyeMaterial);
+        rightEye.position.set(0.4, 1.6, 0.8);
+        giantEnemyGroup.add(rightEye);
+
+        // Right eye glow (bigger for giant)
+        const rightEyeGlowGeometry = new THREE.SphereGeometry(0.24, 8, 8);
+        const rightEyeGlowMaterial = new THREE.MeshBasicMaterial({
+            color: 0xFF0000,
+            transparent: true,
+            opacity: 0.4
+        });
+        const rightEyeGlow = new THREE.Mesh(rightEyeGlowGeometry, rightEyeGlowMaterial);
+        rightEyeGlow.position.set(0.4, 1.6, 0.8);
+        giantEnemyGroup.add(rightEyeGlow);
+
+        // Store references for animation
+        giantEnemyGroup.leftEye = leftEye;
+        giantEnemyGroup.rightEye = rightEye;
+        giantEnemyGroup.leftEyeGlow = leftEyeGlow;
+        giantEnemyGroup.rightEyeGlow = rightEyeGlow;
+        giantEnemyGroup.eyeTime = Math.random() * Math.PI * 2; // Random start phase
         
         // Spawn at random position around player
         const angle = Math.random() * Math.PI * 2;
@@ -2148,11 +2252,32 @@ class GhibliSurvivors {
     
     updateEnemies(deltaTime) {
         this.enemies.forEach((enemy, index) => {
-            // Update pulsing glow for giant enemies
+            // Update eye glow animation for all enemies
+            if (enemy.leftEye && enemy.rightEye && enemy.leftEyeGlow && enemy.rightEyeGlow) {
+                enemy.eyeTime += deltaTime * 3; // Eye pulse speed
+                
+                // Pulsing glow effect
+                const glowIntensity = 0.2 + 0.3 * Math.sin(enemy.eyeTime);
+                enemy.leftEyeGlow.material.opacity = glowIntensity;
+                enemy.rightEyeGlow.material.opacity = glowIntensity;
+                
+                // Main eye brightness variation
+                const eyeIntensity = 0.8 + 0.2 * Math.sin(enemy.eyeTime * 1.5);
+                enemy.leftEye.material.opacity = eyeIntensity;
+                enemy.rightEye.material.opacity = eyeIntensity;
+            }
+            
+            // Update pulsing glow for giant enemies (existing giant glow)
             if (enemy.isGiant && enemy.children.length > 0) {
                 enemy.glowTime += deltaTime * 2;
-                const glow = enemy.children[0];
-                glow.material.opacity = 0.05 + 0.05 * Math.sin(enemy.glowTime);
+                // Find the giant's body glow (not the eye glow)
+                const bodyGlow = enemy.children.find(child => 
+                    child.geometry && child.geometry.type === 'SphereGeometry' && 
+                    child.geometry.parameters.radius === 4
+                );
+                if (bodyGlow) {
+                    bodyGlow.material.opacity = 0.05 + 0.05 * Math.sin(enemy.glowTime);
+                }
                 
                 // Update health bar for giant enemies
                 this.updateGiantHealthBar(enemy);
